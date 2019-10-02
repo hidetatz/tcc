@@ -55,11 +55,14 @@ func doFirstReservation(db *FakeDB) {
 
 func doSecondReservation(db *FakeDB) {
 	// In second reservation, flight seat is not enough
+	// Please refer to working example
 	orchestrator := tcc.NewOrchestrator([]*tcc.Service{flightService, hotelService}, tcc.WithMaxRetries(1))
 	err := orchestrator.Orchestrate()
 	if err != nil {
 		log.Printf("error happened in 2nd reservation: %s", err)
 	}
+
+	// When error is returned, it can be casted into *tcc.Error
 	tccErr := err.(*tcc.Error)
 	log.Printf("tccErr.Error: %v", tccErr.Error())
 	log.Printf("tccErr.FailedPhase == ErrTryFailed: %v", tccErr.FailedPhase() == tcc.ErrTryFailed)
