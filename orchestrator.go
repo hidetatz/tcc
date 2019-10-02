@@ -59,6 +59,7 @@ func (o *orchestrator) Orchestrate() error {
 func (o *orchestrator) tryAll() error {
 	eg := errgroup.Group{}
 	for _, s := range o.services {
+		s := s
 		eg.Go(func() error {
 			s.tried = true
 			if err := s.Try(); err != nil {
@@ -78,6 +79,7 @@ func (o *orchestrator) tryAll() error {
 func (o *orchestrator) confirmAll() error {
 	eg := errgroup.Group{}
 	for _, s := range o.services {
+		s := s
 		eg.Go(func() error {
 			s.confirmed = true
 			if !s.trySucceeded {
@@ -104,6 +106,7 @@ func (o *orchestrator) confirmAll() error {
 func (o *orchestrator) cancelAll() error {
 	eg := errgroup.Group{}
 	for _, s := range o.services {
+		s := s
 		eg.Go(func() error {
 			if !s.tried {
 				return nil
