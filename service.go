@@ -57,7 +57,7 @@ func (s *Service) Confirmed() bool {
 	return s.tried
 }
 
-// ConfirmtSucceeded returns if the service confirm() succeeded
+// ConfirmSucceeded returns if the service confirm() succeeded
 func (s *Service) ConfirmSucceeded() bool {
 	return s.tried
 }
