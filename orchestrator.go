@@ -2,6 +2,7 @@ package tcc
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/cenkalti/backoff"
 	"golang.org/x/sync/errgroup"
@@ -30,6 +31,8 @@ type Orchestrator interface {
 type orchestrator struct {
 	services []*Service
 	backoff  backoff.BackOff
+
+	sync.Mutex
 }
 
 // NewOrchestrator returns interface Orchestrator
@@ -38,6 +41,7 @@ func NewOrchestrator(services []*Service, opts ...Option) Orchestrator {
 	o := &orchestrator{
 		services: services,
 		backoff:  backoff.WithMaxRetries(backoff.NewExponentialBackOff(), maxRetries),
+		Mutex:    sync.Mutex{},
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -62,7 +66,8 @@ func (o *orchestrator) tryAll() error {
 		s := s
 		eg.Go(func() error {
 			s.tried = true
-			if err := s.Try(); err != nil {
+			err := s.Try()
+			if err != nil {
 				return &Error{
 					failedPhase: ErrTryFailed,
 					err:         err,
@@ -89,7 +94,10 @@ func (o *orchestrator) confirmAll() error {
 					serviceName: s.name,
 				}
 			}
-			if err := backoff.Retry(s.Confirm, o.backoff); err != nil {
+			o.Lock()
+			defer o.Unlock()
+			err := backoff.Retry(s.Confirm, o.backoff)
+			if err != nil {
 				return &Error{
 					failedPhase: ErrConfirmFailed,
 					err:         err,
@@ -112,7 +120,10 @@ func (o *orchestrator) cancelAll() error {
 				return nil
 			}
 			s.canceled = true
-			if err := backoff.Retry(s.Cancel, o.backoff); err != nil {
+			o.Lock()
+			defer o.Unlock()
+			err := backoff.Retry(s.Cancel, o.backoff)
+			if err != nil {
 				return &Error{
 					failedPhase: ErrCancelFailed,
 					err:         err,
