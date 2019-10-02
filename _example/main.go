@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"sync"
 
 	"github.com/yagi5/tcc"
 )
 
 var (
 	db = &FakeDB{
-		Mutex:  &sync.Mutex{},
 		flight: flight{StockSeatCount: uint64(3)},
 		hotel:  hotel{StockRoomCount: uint64(1)},
 	}
@@ -42,14 +40,11 @@ type hotel struct {
 
 // FakeDB represents a database for example
 type FakeDB struct {
-	*sync.Mutex
 	flight flight
 	hotel  hotel
 }
 
 func (f *FakeDB) tryReserveFlightSeat() error {
-	f.Lock()
-	defer f.Unlock()
 	if f.flight.StockSeatCount == 0 {
 		return fmt.Errorf("no seat")
 	}
@@ -58,22 +53,16 @@ func (f *FakeDB) tryReserveFlightSeat() error {
 }
 
 func (f *FakeDB) confirmFlightSeatReservation() error {
-	f.Lock()
-	defer f.Unlock()
 	f.flight.ReservedSeatCount++
 	return nil
 }
 
 func (f *FakeDB) cancelFlightSeat() error {
-	f.Lock()
-	defer f.Unlock()
 	f.flight.StockSeatCount++
 	return nil
 }
 
 func (f *FakeDB) tryReserveHotelRoom() error {
-	f.Lock()
-	defer f.Unlock()
 	if f.hotel.StockRoomCount == 0 {
 		return fmt.Errorf("no room")
 	}
@@ -82,15 +71,11 @@ func (f *FakeDB) tryReserveHotelRoom() error {
 }
 
 func (f *FakeDB) confirmHotelRoomReservation() error {
-	f.Lock()
-	defer f.Unlock()
 	f.hotel.ReservedRoomCount++
 	return nil
 }
 
 func (f *FakeDB) cancelHotelRoom() error {
-	f.Lock()
-	defer f.Unlock()
 	f.hotel.StockRoomCount++
 	return nil
 }
