@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/yagi5/tcc"
+	"github.com/dty1er/tcc"
 )
 
 var (

@@ -1,4 +1,4 @@
-module github.com/yagi5/tcc
+module github.com/dty1er/tcc
 
 go 1.12
 
